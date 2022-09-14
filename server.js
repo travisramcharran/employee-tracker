@@ -148,3 +148,39 @@ viewDepartment = () => {
       }
     );
   };
+
+  addDepartment = () => {
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "Department",
+
+          message: "Add new department",
+          
+          validate: (Department) => {
+            
+            if (Department) {
+              return true;
+            } else {
+              console.log("Please enter a department");
+              return false;
+            }
+          },
+        },
+      ])
+      .then((answer) => {
+        
+        db.query(
+          `INSERT INTO department (name) VALUES (?)`,
+          
+          answer.Department,
+          (err, results) => {
+            if (err) throw err;
+            console.log(" Added " + answer.Department + " to departments!");
+            
+            PromptUser();
+          }
+        );
+      });
+  };
