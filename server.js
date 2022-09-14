@@ -259,3 +259,187 @@ viewDepartment = () => {
         );
       });
   };
+
+
+  addEmployee = () => {
+
+    inquirer
+    .prompt([
+      {
+        type: "input",
+        
+        name: "fName",
+        
+        message: "new employee's first name",
+        
+        validate: (fname) => {
+          if (fname) {
+            return true;
+          } else {
+            console.log("Please enter employee's first name");
+            return false;
+          }
+        },
+      },
+      {
+        type: "input",
+        
+        name: "lName",
+        
+        message: "new employee's Last name",
+        
+        validate: (lname) => {
+          if (lname) {
+            return true;
+          } else {
+            console.log("Please enter employee's last name");
+            return false;
+          }
+        },
+      },
+      {
+        
+        type: "number",
+        
+        name: "role",
+        
+        message: "Enter role number",
+        
+        validate: (role) => {
+          if (isNaN(role) === false) {
+            return true;
+          } else {
+            console.log("Please enter role number");
+            return false;
+          }
+        },
+    },
+    {
+      type: "number",
+      
+      name: "manager",
+      
+      message: "Enter Manager ID",
+      
+      validate: (manager) => {
+        if (isNaN(manager) === false) {
+          return true;
+        } else {
+          console.log("Please enter manager's ID");
+          return false;
+        }
+      },
+    },
+  ])
+  
+  .then((answer) => {
+    db.query(
+      "INSERT INTO employee SET ?",
+      {
+        first_name: answer.fName,
+        
+        last_name: answer.lName,
+        
+        role_id: answer.role,
+        
+        manager_id: answer.manager,
+      },
+
+      (err) => {
+        if (err) throw err;
+        
+        console.log(
+          " Added " + answer.fName + " " + answer.lName + " to our employees!"
+        );
+
+        PromptUser();
+      }
+    );
+  });
+};
+
+updateEmployee = () => {
+    
+    db.query("SELECT * FROM employee", function (err, results) {
+      if (err) throw err;
+  
+      
+      inquirer
+        
+      .prompt([
+          {
+            type: "rawlist",
+            
+            name: "choice",
+            
+            message: "Select employee to update",
+            
+            choices: function () {
+              let choiceArr = [];
+              for (i = 0; i < results.length; i++) {
+                choiceArr.push(results[i].last_name);
+              }
+              return choiceArr;
+            },
+          },
+        ])
+        
+        .then((answer) => {
+          
+            const saveName = answer.choice;
+          
+            db.query("SELECT * FROM employee", function (err, results) {
+            if (err) throw err;
+  
+            inquirer
+              .prompt([
+                {
+                  type: "rawlist",
+                  
+                  name: "role",
+                  
+                  message: "Select Title",
+                  
+                  choices: function () {
+                    var choiceArr = [];
+                    for (i = 0; i < results.length; i++) {
+                      choiceArr.push(results[i].role_id);
+                    }
+                    return choiceArr;
+                  },
+                },
+                {
+                  type: "number",
+                  
+                  name: "manager",
+                  
+                  validate: (value) => {
+                    if (isNaN(value) === false) {
+                      return true;
+                    } else {
+                      console.log("Please enter the manager's id");
+                      return false;
+                    }
+                  },
+                },
+              ])
+              .then((answer) => {
+                
+                console.log(answer);
+                
+                console.log(saveName);
+                db.query("UPDATE employee SET ? WHERE last_name = ?", [
+                  {
+                    role_id: answer.role,
+                    
+                    manager_id: answer.manager,
+                  },
+                  saveName,
+                ]),
+                  console.log("Employee updated!");
+                PromptUser();
+              });
+          });
+        });
+    });
+  };
